@@ -1,0 +1,12 @@
+{
+	"name": "catch-the-monster-game",
+	"version": "0.0.1",
+	"authors":["Pablo Anabalon <pa.anabalonf@gmail.com>"],
+	"license": "MIT",
+	"private": false,
+	"dependencies": {
+		"angular": null,
+		"angular-socket-io": null,
+		"bootstrap": null
+	}
+}
