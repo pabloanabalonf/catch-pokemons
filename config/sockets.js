@@ -17,7 +17,7 @@ exports.listen = function (server){
 	});
 
 	handleMonsterNoCatch(io);
-	//handleOldSessions(io);
+	handleOldSessions(io);
 };
 
 
