@@ -26,8 +26,8 @@ function handleNewGame (io, socket){
 		canvas = data.canvas;
 		//if the monster is not created yet...
 		if(!monster.x && !monster.y){
-			monster.x = 32 + (Math.random() * canvas.width - 64);
-			monster.y = 32 + (Math.random() * canvas.height - 64);
+			monster.x = 32 + (Math.random() * (canvas.width - 64));
+			monster.y = 32 + (Math.random() * (canvas.height - 64));
 			monster.updated = Date.now();
 		}
 		socket.emit('play', {players: players, monster: monster});
@@ -94,8 +94,8 @@ function handleMonsterCatch(io, socket){
 		//Add point to the user
 		players[data.index].monster_caught += 1;
 		//new monster position
-		monster.x = 32 + (Math.random() * canvas.width - 64);
-		monster.y = 32 + (Math.random() * canvas.height - 64);
+		monster.x = 32 + (Math.random() * (canvas.width - 64));
+		monster.y = 32 + (Math.random() * (canvas.height - 64));
 		//reset monster update
 		monster.updated = Date.now();
 		io.emit('reset', {'index': data.index, 'monster_caught': players[data.index].monster_caught, 'monster': monster});
@@ -117,8 +117,8 @@ function handleMonsterNoCatch(io){
 	setInterval(function (){
 		var timeMonsterNoCaught = Date.now() - monster.updated;
 		if(timeMonsterNoCaught > 10000){
-			monster.x = 32 + (Math.random() * canvas.width - 64);
-			monster.y = 32 + (Math.random() * canvas.height - 64);
+			monster.x = 32 + (Math.random() * (canvas.width - 64));
+			monster.y = 32 + (Math.random() * (canvas.height - 64));
 			monster.updated = Date.now();
 			io.emit('monsterNoCatch', {'monster': monster});
 		}
