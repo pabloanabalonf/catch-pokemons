@@ -201,11 +201,11 @@
 		socket.forward('newPlayerReady', $scope);
 		$scope.$on('socket:newPlayerReady', function (event, dataSocket){
 			//Add player to array
-			$scope.players.push(dataSocket.players[dataSocket.index]);
+			$scope.players.push(dataSocket.player);
 			//if $scope.player.name still exists mean that is an user that not playing yet
 			if($scope.player.name){
 				//if you are the new player, you receive an index and the event listener for input
-				if(dataSocket.players[dataSocket.index].name_player == $scope.player.name){
+				if(dataSocket.player.name_player == $scope.player.name){
 					$scope.playerReady = true;
 					$scope.player = $scope.players[dataSocket.index];
 					$scope.player.keysDown = {};

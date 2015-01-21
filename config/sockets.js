@@ -38,7 +38,7 @@ function handleNewPlayer(io, socket){
 	socket.on('newPlayer', function (data){
 		var player = {
 			"name_player": data.name_player,
-			"speed": 256,
+			"speed": 256, //movement in pixels per second
 			"x": data.x,
 			"y": data.y,
 			"monster_caught": 0,
@@ -54,7 +54,7 @@ function handleNewPlayer(io, socket){
 			socket.name_player = data.name_player;
 			socket.index_player = index;
 			//emit event to all users connected
-			io.emit("newPlayerReady", {'players': players, 'index': index});
+			io.emit("newPlayerReady", {'player': player, 'index': index});
 		}else{
 			//player name exists, choose another
 			socket.emit('nameExists', {exist: true, message: "Name "+data.name_player+" already exist"});
