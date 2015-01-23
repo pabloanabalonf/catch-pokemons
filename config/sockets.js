@@ -104,7 +104,7 @@ function handleMonsterCatch(io, socket){
 function handleDisconnect(io, socket){
 	socket.on('disconnect', function (){
 		//if player gone, we delete of collection
-		if(socket.name_player && socket.index_player){
+		if(socket.name_player && socket.index_player >= 0){
 			players.splice(socket.index_player, 1);
 			io.emit('playerDisconnect', {'player':{'name_player':socket.name_player, 'index_player': socket.index_player}});
 		}

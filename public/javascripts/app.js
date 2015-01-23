@@ -230,10 +230,12 @@
 			$scope.players[dataSocket.index] = dataSocket.player;
 		});
 
-		/* PLAYER DISCONETC */
+		/* PLAYER DISCONECT */
 		socket.forward('playerDisconnect', $scope);
 		$scope.$on('socket:playerDisconnect', function (event, dataSocket){
-			if($scope.playerReady) $scope.players.splice(dataSocket.index_player, 1);
+			if($scope.players[dataSocket.player.index_player]){
+				$scope.players.splice(dataSocket.player.index_player, 1);
+			}
 		});
 
 		/* MONSTER NOT CAPTURED IN 10 SECONDS, THEREFORE WE RESET POSITION */
