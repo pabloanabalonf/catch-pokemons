@@ -131,7 +131,7 @@
 					}
 
 					if($scope.player.x <= (monster.x +32) && monster.x <= ($scope.player.x +32) && $scope.player.y <= (monster.y +32) && monster.y <= ($scope.player.y +32)){
-						$scope.players[index].monster_caught += 1;
+						//$scope.players[index].monster_caught += 1;
 						$scope.player.monster_caught += 1;
 						socket.emit('monsterCatch', {'index': index});
 					}
@@ -219,7 +219,9 @@
 		socket.forward('reset', $scope);
 		$scope.$on('socket:reset', function (event, dataSocket){
 			monster = dataSocket.monster;
-			$scope.players[dataSocket.index].monster_caught = dataSocket.monster_caught;
+			if(index != dataSocket.index){
+				$scope.players[dataSocket.index].monster_caught = dataSocket.monster_caught;
+			}
 		});
 
 		/* GET MOVEMENT OF PLAYERS */

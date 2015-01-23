@@ -1,6 +1,5 @@
 var socketio = require('socket.io');
 var _ = require('lodash');
-var io;
 var players = [];
 var monster = {};
 var canvas = {};
