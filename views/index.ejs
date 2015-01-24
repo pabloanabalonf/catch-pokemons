@@ -52,7 +52,7 @@
                                 <th class="monster-caught-th">Monsters Caught</th>
                                 <th>Player</th>
                             </tr>
-                            <tr ng-repeat="p in players | orderBy: 'monster_caught':true">
+                            <tr ng-repeat="p in players | orderBy: 'monster_caught':true track by $index">
                                 <td>{{p.monster_caught}}</td>
                                 <td>{{p.name_player}}</td>
                             </tr>

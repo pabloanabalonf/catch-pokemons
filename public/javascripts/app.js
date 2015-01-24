@@ -54,18 +54,6 @@
 		//Send canvas dimensions
 		socket.emit('newGame', {'canvas': {'width': canvas.width, 'height': canvas.height}});
 
-		//Return index of player
-		var getIndex = function(){
-			var i;
-			for (i = 0; i < $scope.players.length; i++){
-				if($scope.players[i].name_player == $scope.player.name_player){
-					return i;
-				}
-			}
-			i = 0;
-			return i;
-		};
-
 		/* RENDER OBJECTS */
 		var render = function(){
 			if(bgReady){
@@ -91,54 +79,42 @@
 		var main = function(){
 			if($scope.player.keysDown){
 				var distance = $scope.player.speed * modifier;
-
-				//check index
-				if(!$scope.players[index]){
-					index = getIndex();
-				}
-				//check name_player
-				if($scope.players[index].name_player != $scope.player.name_player){
-					index = getIndex();
-				}else{
-					playMove = false;
-					if(38 in $scope.player.keysDown){
-						if(($scope.player.y - distance) >= 0){
-							$scope.players[index].y -= distance;
-							$scope.player.y -= distance;
-							playMove = true;
-						}
-					}
-					if(40 in $scope.player.keysDown){
-						if(($scope.player.y + distance) <= (canvas.height-32)){
-							$scope.players[index].y += distance;
-							$scope.players.y += distance;
-							playMove = true;
-						}
-					}
-					if(37 in $scope.player.keysDown){
-						if(($scope.player.x - distance) >= 0){
-							$scope.players[index].x -= distance;
-							$scope.players.x -= distance;
-							playMove = true;
-						}
-					}
-					if(39 in $scope.player.keysDown){
-						if(($scope.player.x + distance) <= (canvas.width-32)){
-							$scope.players[index].x += distance;
-							$scope.players.x += distance;
-							playMove = true;
-						}
-					}
-
-					if($scope.player.x <= (monster.x +32) && monster.x <= ($scope.player.x +32) && $scope.player.y <= (monster.y +32) && monster.y <= ($scope.player.y +32)){
-						//$scope.players[index].monster_caught += 1;
-						$scope.player.monster_caught += 1;
-						socket.emit('monsterCatch', {'index': index});
-					}
-					if(playMove){
-						socket.emit('updateMove', {'player': $scope.player, 'index': index});
+				playMove = false;
+				if(38 in $scope.player.keysDown){
+					if(($scope.player.y - distance) >= 0){
+						$scope.player.y -= distance;
+						playMove = true;
 					}
 				}
+				if(40 in $scope.player.keysDown){
+					if(($scope.player.y + distance) <= (canvas.height-32)){
+						$scope.player.y += distance;
+						playMove = true;
+					}
+				}
+				if(37 in $scope.player.keysDown){
+					if(($scope.player.x - distance) >= 0){
+						$scope.player.x -= distance;
+						playMove = true;
+					}
+				}
+				if(39 in $scope.player.keysDown){
+					if(($scope.player.x + distance) <= (canvas.width-32)){
+						$scope.player.x += distance;
+						playMove = true;
+					}
+				}
+
+				$scope.players[index].x = $scope.player.x;
+				$scope.players[index].y = $scope.player.y;
+				if($scope.player.x <= (monster.x +32) && monster.x <= ($scope.player.x +32) && $scope.player.y <= (monster.y +32) && monster.y <= ($scope.player.y +32)){
+					$scope.player.monster_caught += 1;
+					socket.emit('monsterCatch', {'index': index});
+				}
+				if(playMove){
+					socket.emit('updateMove', {'player': $scope.player, 'index': index});
+				}
+				
 			}
 			render();
 			requestAnimationFrame(main);
@@ -200,6 +176,9 @@
 		/* NEW PLAYER READY TO PLAY */
 		socket.forward('newPlayerReady', $scope);
 		$scope.$on('socket:newPlayerReady', function (event, dataSocket){
+			if(dataSocket.reset_players) {
+				$scope.players = [];
+			}
 			//Add player to array
 			$scope.players.push(dataSocket.player);
 			//if $scope.player.name still exists mean that is an user that not playing yet
@@ -234,7 +213,7 @@
 		socket.forward('playerDisconnect', $scope);
 		$scope.$on('socket:playerDisconnect', function (event, dataSocket){
 			if($scope.players[dataSocket.player.index_player]){
-				$scope.players.splice(dataSocket.player.index_player, 1);
+				delete $scope.players[dataSocket.player.index_player];
 			}
 		});
 
@@ -263,7 +242,7 @@
 					for(var z = 0; z < $scope.players.length; z++){
 						if(!$scope.players[z]) continue;
 						if($scope.players[z].name_player == dataSocket.players[x].name_player){
-							$scope.players.splice(z, 1);
+							delete $scope.players[z];
 						}
 					}
 				}
