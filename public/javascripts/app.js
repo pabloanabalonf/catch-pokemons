@@ -181,7 +181,7 @@
 			}
 			//Add player to array
 			$scope.players.push(dataSocket.player);
-			if $scope.player.name still exists mean that the user is not playing yet
+			//if $scope.player.name still exists mean that the user is not playing yet
 			if($scope.player.name){
 				//if you are the new player, you receive an index and the event listener for input
 				if(dataSocket.player.name_player == $scope.player.name){
