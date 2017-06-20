@@ -4,6 +4,7 @@ let players = {};
 const monster = {};
 
 function handleMonsterNoCatch(io) {
+  console.log('canvas' + JSON.stringify(canvas));
   console.log('listening handleMonsterNoCatch event');
   // If no one catches the monster in 10 seconds
   // its position is restarted
