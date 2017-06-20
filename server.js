@@ -9,8 +9,8 @@ const dev = process.env.NODE_ENV !== 'production';
 const nextApp = next({ dev });
 const nextHandler = nextApp.getRequestHandler();
 
-// socket.io server
 io.on('connection', socket => {
+  console.log('socket.io connected');
   gameIO.connection(io, socket);
 });
 
@@ -21,10 +21,6 @@ app.use('/public', express.static(`${__dirname}/public`));
 
 nextApp.prepare()
   .then(() => {
-    app.get('/messages', (req, res) => {
-      res.json(messages)
-    });
-
     app.get('*', (req, res) => {
       return nextHandler(req, res);
     });

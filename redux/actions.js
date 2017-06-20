@@ -1,5 +1,12 @@
 import * as types from './types';
 
+export function updatePlayerName(name) {
+  return {
+    type: types.UPDATE_PLAYER_NAME,
+    name
+  };
+}
+
 export function newGame(players, monster) {
   return {
     type: types.NEW_GAME,

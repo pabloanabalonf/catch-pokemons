@@ -1,9 +1,10 @@
-const lodash = require('lodash');
+const _ = require('lodash');
 const canvas = require('./canvas');
 let players = {};
 const monster = {};
 
 function handleMonsterNoCatch(io) {
+  console.log('listening handleMonsterNoCatch event');
   // If no one catches the monster in 10 seconds
   // its position is restarted
   setInterval(() => {
@@ -18,6 +19,7 @@ function handleMonsterNoCatch(io) {
 }
 
 function handleOldSessions(io) {
+  console.log('listening handleOldSessions event');
   // If player doesn't move in 20 secons
   // its remove from `players` object
   setInterval(() => {
@@ -25,16 +27,17 @@ function handleOldSessions(io) {
     Object.keys(players).forEach((key) => {
       const playerUpdate = Date.now() - players[key].updated;
       if (playerUpdate > 20000) {
-        players = _.omit(players, key);
         playersDeleted.push(key);
       }
     });
+    players = _.omit(players, playersDeleted);
     //Emit event to all user
     io.emit('removeOldSessions', playersDeleted);
   }, 20000);
 }
 
 function handleNewGame (io, socket) {
+  console.log('listening newGame event');
   socket.on('newGame', () => {
     //if the monster is not created yet...
     if (!monster.x && !monster.y) {
@@ -53,29 +56,28 @@ function handleNewGame (io, socket) {
 }
 
 function handleNewPlayer(io, socket) {
-  socket.on('newPlayer', (data) => {
+  console.log('listening handleNewPlayer event');
+  socket.on('newPlayer', (name) => {
     // Check if player already exist
-    if (players[data.name]) {
+    if (players[name]) {
       socket.emit(
         'nameExists',
-        {
-          message: `Name ${data.name_player} already exist`
-        }
+        `Name ${name} already exist`
       );
     } else {
-      players[data.name] = {
-        x: data.x,
-        y: data.y,
+      players[name] = {
+        x: canvas.width / 2,
+        y: canvas.height / 2,
         speed: 256,
         capturedMonsters: 0,
         updated: Date.now()
       };
-      socket.namePlayer = data.name;
+      socket.namePlayer = name;
       io.emit(
         'newPlayerReady',
         {
-          name: data.name,
-          info: players[data.name]
+          name: name,
+          info: players[name]
         }
       );
     }
@@ -98,13 +100,34 @@ function handleUpdatePlayerPosition(io, socket) {
   });
 }
 
-function handleDisconnect(io, socket) {
-  socket.on('disconnect', () => {
-    players = _.omit(players, data.namePlayer);
-    io.emit(
-      'playerDisconnect',
-      { name: socket.namePlayer }
+function handleMonsterCatch(io, socket) {
+	socket.on('monsterCatch', (name) => {
+		players[name].capturedMonsters += 1;
+		monster.x = 32 + (Math.random() * (canvas.width - 64));
+		monster.y = 32 + (Math.random() * (canvas.height - 64));
+		monster.updated = Date.now();
+		io.emit(
+      'reset',
+      {
+        name,
+        capturedMonsters: players[name].capturedMonsters,
+        monster
+      }
     );
+	});
+}
+
+function handleDisconnect(io, socket) {
+  console.log('listening handleDisconnect event');
+  socket.on('disconnect', () => {
+    console.log('disconnect');
+    if (socket.namePlayer) {
+      players = _.omit(players, socket.namePlayer);
+      io.emit(
+        'playerDisconnect',
+        { name: socket.namePlayer }
+      );
+    }
   });
 }
 
