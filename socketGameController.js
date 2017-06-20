@@ -1,7 +1,7 @@
 const lodash = require('lodash');
+const canvas = require('./canvas');
 let players = {};
 const monster = {};
-const canvas = {};
 
 function handleMonsterNoCatch(io) {
   // If no one catches the monster in 10 seconds
@@ -30,13 +30,12 @@ function handleOldSessions(io) {
       }
     });
     //Emit event to all user
-    io.emit('sessionsExpired', playersDeleted);
+    io.emit('removeOldSessions', playersDeleted);
   }, 20000);
 }
 
 function handleNewGame (io, socket) {
-  socket.on('newGame', function (data){
-    canvas = data.canvas;
+  socket.on('newGame', () => {
     //if the monster is not created yet...
     if (!monster.x && !monster.y) {
       monster.x = 32 + (Math.random() * (canvas.width - 64));
@@ -83,14 +82,14 @@ function handleNewPlayer(io, socket) {
   });
 }
 
-function handleUpdateMovePlayer(io, socket) {
-  socket.on('updateMove', (data) => {
+function handleUpdatePlayerPosition(io, socket) {
+  socket.on('updatePosition', (data) => {
     players[data.name].updated = Date.now();
     players[data.name].x = data.player.x;
     players[data.name].y = data.player.y;
     //emit event for all users less for to the user who fire this event
     socket.broadcast.emit(
-      'updateMovePlayers',
+      'updatePlayerPosition',
       {
         name: data.name,
         info: players[data.name]
@@ -115,7 +114,7 @@ module.exports = {
   connection: (io, socket) => {
     handleNewGame(io, socket);
     handleNewPlayer(io, socket);
-    handleUpdateMovePlayer(io, socket);
+    handleUpdatePlayerPosition(io, socket);
     handleMonsterCatch(io, socket);
     handleDisconnect(io, socket);
   }
