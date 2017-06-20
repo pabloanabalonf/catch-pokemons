@@ -1,4 +1,4 @@
-logs
 *.log
 .DS_STORE
 node_modules
+.next
