@@ -3,7 +3,7 @@ const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 const next = require('next');
-const socketGame = require('./socketGameController');
+const gameIO = require('./socketGameController');
 
 const dev = process.env.NODE_ENV !== 'production';
 const nextApp = next({ dev });
@@ -11,11 +11,11 @@ const nextHandler = nextApp.getRequestHandler();
 
 // socket.io server
 io.on('connection', socket => {
-  socketGame.game(io, socket);
+  gameIO.connection(io, socket);
 });
 
-socketGame.handleMonsterNoCatch(io);
-socketGame.handleOldSessions(io);
+gameIO.handleMonsterNoCatch(io);
+gameIO.handleOldSessions(io);
 
 app.use('/public', express.static(`${__dirname}/public`));
 

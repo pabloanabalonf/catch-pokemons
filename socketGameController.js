@@ -22,7 +22,7 @@ function handleOldSessions(io) {
   // its remove from `players` object
   setInterval(() => {
     const playersDeleted = [];
-    Object.key(players).forEach((key) => {
+    Object.keys(players).forEach((key) => {
       const playerUpdate = Date.now() - players[key].updated;
       if (playerUpdate > 20000) {
         players = _.omit(players, key);
@@ -30,7 +30,7 @@ function handleOldSessions(io) {
       }
     });
     //Emit event to all user
-    io.emit('sessionsExpired', { playersDeleted });
+    io.emit('sessionsExpired', playersDeleted);
   }, 20000);
 }
 
@@ -92,7 +92,7 @@ function handleUpdateMovePlayer(io, socket) {
     socket.broadcast.emit(
       'updateMovePlayers',
       {
-        name: data.name
+        name: data.name,
         info: players[data.name]
       }
     );
@@ -109,10 +109,10 @@ function handleDisconnect(io, socket) {
   });
 }
 
-export default {
+module.exports = {
   handleMonsterNoCatch,
   handleOldSessions,
-  game: (io, socket) => {
+  connection: (io, socket) => {
     handleNewGame(io, socket);
     handleNewPlayer(io, socket);
     handleUpdateMovePlayer(io, socket);
