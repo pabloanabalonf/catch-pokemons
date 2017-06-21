@@ -14,3 +14,18 @@ export const newGame = (players, monster) => dispatch => {
     monster
   });
 }
+
+export const monsterNoCatch = (monster) => dispatch => {
+  return dispatch({
+    type: types.MONSTER_NO_CATCH,
+    monster
+  });
+}
+
+export const newPlayer = (name, info) => dispatch => {
+  return dispatch({
+    type: types.NEW_PLAYER,
+    name,
+    info
+  });
+}

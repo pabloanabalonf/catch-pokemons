@@ -3,18 +3,21 @@ const canvas = require('./canvas');
 let players = {};
 const monster = {};
 
+const getRandomPosition = (dimension) => {
+  return 32 + (Math.random() * (dimension - 64));
+};
+
 function handleMonsterNoCatch(io) {
-  console.log('canvas' + JSON.stringify(canvas));
   console.log('listening handleMonsterNoCatch event');
   // If no one catches the monster in 10 seconds
   // its position is restarted
   setInterval(() => {
     const timeMonsterNoCaught = Date.now() - monster.updated;
     if(timeMonsterNoCaught > 10000){
-      monster.x = 32 + (Math.random() * (canvas.width - 64));
-      monster.y = 32 + (Math.random() * (canvas.height - 64));
+      monster.x = getRandomPosition(canvas.width);
+      monster.y = getRandomPosition(canvas.height);
       monster.updated = Date.now();
-      io.emit('monsterNoCatch', { monster });
+      io.emit('monsterNoCatch', monster);
     }
   }, 10000);
 }
@@ -42,8 +45,8 @@ function handleNewGame (io, socket) {
   socket.on('newGame', () => {
     //if the monster is not created yet...
     if (!monster.x && !monster.y) {
-      monster.x = 32 + (Math.random() * (canvas.width - 64));
-      monster.y = 32 + (Math.random() * (canvas.height - 64));
+      monster.x = getRandomPosition(canvas.width);
+      monster.y = getRandomPosition(canvas.height);
       monster.updated = Date.now();
     }
     socket.emit(
@@ -67,8 +70,8 @@ function handleNewPlayer(io, socket) {
       );
     } else {
       players[name] = {
-        x: canvas.width / 2,
-        y: canvas.height / 2,
+        x: getRandomPosition(canvas.width),
+        y: getRandomPosition(canvas.height),
         speed: 256,
         capturedMonsters: 0,
         updated: Date.now()
@@ -104,8 +107,8 @@ function handleUpdatePlayerPosition(io, socket) {
 function handleMonsterCatch(io, socket) {
 	socket.on('monsterCatch', (name) => {
 		players[name].capturedMonsters += 1;
-		monster.x = 32 + (Math.random() * (canvas.width - 64));
-		monster.y = 32 + (Math.random() * (canvas.height - 64));
+		monster.x = getRandomPosition(canvas.width);
+		monster.y = getRandomPosition(canvas.height);
 		monster.updated = Date.now();
 		io.emit(
       'reset',

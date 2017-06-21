@@ -10,7 +10,9 @@ import Container from '../components/Container';
 import Aside from '../components/Aside';
 import {
   updatePlayerName,
-  newGame
+  newGame,
+  monsterNoCatch,
+  newPlayer
 } from '../redux/actionsDispatcher';
 import canvasDimensions from '../canvas';
 
@@ -20,12 +22,16 @@ const CanvasWrapper = styled.div`
   justify-content: center;
 `;
 
+let requestAnimationFrame;
+
 class HomePage extends React.Component {
   constructor(props) {
     super(props);
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
     this.handleNameExists = this.handleNameExists.bind(this);
     this.handlePlay = this.handlePlay.bind(this);
+    this.handleMonsterNoCatch = this.handleMonsterNoCatch.bind(this);
+    this.handleNewPlayer = this.handleNewPlayer.bind(this);
     this.state = {
       errorNameInput: ''
     };
@@ -37,18 +43,20 @@ class HomePage extends React.Component {
     this.socket = io();
     this.socket.on('nameExists', this.handleNameExists);
     this.socket.on('play', this.handlePlay);
+    this.socket.on('monsterNoCatch', this.handleMonsterNoCatch);
+    this.socket.on('newPlayerReady', this.handleNewPlayer);
     this.socket.emit('newGame');
     this.ctx = this._canvas.getContext('2d');
     this.bgImage = new Image();
     this.bgReady = false;
-    this.bgImage.onload = function(){
+    this.bgImage.onload = () => {
       this.bgReady = true;
     };
     this.bgImage.src = '/public/background.png';
 
     this.heroImage = new Image();
     this.heroReady = false;
-    this.heroImage.onload = function(){
+    this.heroImage.onload = () => {
       this.heroReady = true;
     };
     this.heroImage.src = '/public/hero.png';
@@ -70,9 +78,17 @@ class HomePage extends React.Component {
     this.props.updatePlayerName('');
   }
 
+  handleMonsterNoCatch(monster) {
+    this.props.monsterNoCatch(monster);
+  }
+
+  handleNewPlayer({ name, info }) {
+    this.props.newPlayer(name, info);
+  }
+
   handlePlay({ players, monster }) {
     this.props.newGame(players, monster);
-    this.requestAnimationFrame = window.requestAnimationFrame
+    requestAnimationFrame = window.requestAnimationFrame
       || window.webkitRequestAnimationFrame
       || window.msRequestAnimationFrame
       || window.mozRequestAnimationFrame;
@@ -114,11 +130,10 @@ class HomePage extends React.Component {
 
   main() {
     this.renderGame();
-    this.requestAnimationFrame(this.main);
+    requestAnimationFrame(this.main);
   };
 
   render () {
-    console.log(canvasDimensions);
     return (
       <Page>
         <Title>
@@ -156,6 +171,8 @@ const mapDispatchToProps = (dispatch) => {
   return {
     updatePlayerName: bindActionCreators(updatePlayerName, dispatch),
     newGame: bindActionCreators(newGame, dispatch),
+    monsterNoCatch: bindActionCreators(monsterNoCatch, dispatch),
+    newPlayer: bindActionCreators(newPlayer, dispatch)
   }
 };
 
