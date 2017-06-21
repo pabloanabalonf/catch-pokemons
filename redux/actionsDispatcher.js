@@ -29,3 +29,25 @@ export const newPlayer = (name, info) => dispatch => {
     info
   });
 }
+
+export const removeOldSessions = (playersDeleted) => dispatch => {
+  return dispatch({
+    type: types.REMOVE_OLD_SESSIONS,
+    playersDeleted
+  });
+}
+
+export const updatePlayerInfo = (name, info) => dispatch => {
+  return dispatch({
+    type: types.UPDATE_PLAYER_INFO,
+    name,
+    info
+  });
+}
+
+export const playerDisconnect = (name) => dispatch => {
+  return dispatch({
+    type: types.PLAYER_DISCONNECT,
+    name
+  });
+}

@@ -8,7 +8,6 @@ const getRandomPosition = (dimension) => {
 };
 
 function handleMonsterNoCatch(io) {
-  console.log('listening handleMonsterNoCatch event');
   // If no one catches the monster in 10 seconds
   // its position is restarted
   setInterval(() => {
@@ -23,7 +22,6 @@ function handleMonsterNoCatch(io) {
 }
 
 function handleOldSessions(io) {
-  console.log('listening handleOldSessions event');
   // If player doesn't move in 20 secons
   // its remove from `players` object
   setInterval(() => {
@@ -41,7 +39,6 @@ function handleOldSessions(io) {
 }
 
 function handleNewGame (io, socket) {
-  console.log('listening newGame event');
   socket.on('newGame', () => {
     //if the monster is not created yet...
     if (!monster.x && !monster.y) {
@@ -60,7 +57,6 @@ function handleNewGame (io, socket) {
 }
 
 function handleNewPlayer(io, socket) {
-  console.log('listening handleNewPlayer event');
   socket.on('newPlayer', (name) => {
     // Check if player already exist
     if (players[name]) {
@@ -88,48 +84,40 @@ function handleNewPlayer(io, socket) {
   });
 }
 
-function handleUpdatePlayerPosition(io, socket) {
+function handleUpdatePlayerInfo(io, socket) {
   socket.on('updatePosition', (data) => {
-    players[data.name].updated = Date.now();
-    players[data.name].x = data.player.x;
-    players[data.name].y = data.player.y;
+    const { name, info, changeMonsterPosition } = data;
+    players[name].updated = Date.now();
+    players[name].x = info.x;
+    players[name].y = info.y;
+    players[name].capturedMonsters = info.capturedMonsters;
     //emit event for all users less for to the user who fire this event
     socket.broadcast.emit(
-      'updatePlayerPosition',
+      'updatePlayerInfo',
       {
-        name: data.name,
-        info: players[data.name]
+        name: name,
+        info: players[name]
       }
     );
+
+    if (changeMonsterPosition) {
+      monster.x = getRandomPosition(canvas.width);
+      monster.y = getRandomPosition(canvas.height);
+      monster.updated = Date.now();
+      io.emit('resetMonsterPosition', monster);
+    }
   });
 }
 
-function handleMonsterCatch(io, socket) {
-	socket.on('monsterCatch', (name) => {
-		players[name].capturedMonsters += 1;
-		monster.x = getRandomPosition(canvas.width);
-		monster.y = getRandomPosition(canvas.height);
-		monster.updated = Date.now();
-		io.emit(
-      'reset',
-      {
-        name,
-        capturedMonsters: players[name].capturedMonsters,
-        monster
-      }
-    );
-	});
-}
 
 function handleDisconnect(io, socket) {
-  console.log('listening handleDisconnect event');
   socket.on('disconnect', () => {
-    console.log('disconnect');
-    if (socket.namePlayer) {
-      players = _.omit(players, socket.namePlayer);
+    const name = socket.namePlayer;
+    if (name) {
+      players = _.omit(players, name);
       io.emit(
         'playerDisconnect',
-        { name: socket.namePlayer }
+        name
       );
     }
   });
@@ -141,8 +129,7 @@ module.exports = {
   connection: (io, socket) => {
     handleNewGame(io, socket);
     handleNewPlayer(io, socket);
-    handleUpdatePlayerPosition(io, socket);
-    handleMonsterCatch(io, socket);
+    handleUpdatePlayerInfo(io, socket);
     handleDisconnect(io, socket);
   }
 };

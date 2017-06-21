@@ -29,6 +29,7 @@ class Aside extends React.Component {
   }
 
   render() {
+    const players = this.props.players;
     return (
       <Wrapper>
         {
@@ -49,6 +50,15 @@ class Aside extends React.Component {
             }
           </div>
         }
+        <ul>
+          {
+            Object.keys(players).map((player) => (
+              <li key={player}>
+                {player}: { players[player].capturedMonsters }
+              </li>
+            ))
+          }
+        </ul>
       </Wrapper>
     );
   }

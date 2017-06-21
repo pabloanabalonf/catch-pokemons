@@ -31,7 +31,7 @@ export const reducer = (state = initialState, action) => {
         players: _.omit(state.players, action.playersDeleted)
       };
     case types.NEW_PLAYER:
-    case types.UPDATE_PLAYER_POSITION:
+    case types.UPDATE_PLAYER_INFO:
       return {
         ...state,
         players: {

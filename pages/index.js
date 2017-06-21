@@ -1,5 +1,6 @@
 import React from 'react';
 import io from 'socket.io-client';
+import _ from 'lodash';
 import { initStore } from '../redux/store';
 import withRedux from 'next-redux-wrapper';
 import { bindActionCreators } from 'redux';
@@ -12,7 +13,10 @@ import {
   updatePlayerName,
   newGame,
   monsterNoCatch,
-  newPlayer
+  newPlayer,
+  removeOldSessions,
+  updatePlayerInfo,
+  playerDisconnect
 } from '../redux/actionsDispatcher';
 import canvasDimensions from '../canvas';
 
@@ -23,6 +27,8 @@ const CanvasWrapper = styled.div`
 `;
 
 let requestAnimationFrame;
+let keysDown = {};
+const modifier = 0.017;
 
 class HomePage extends React.Component {
   constructor(props) {
@@ -32,6 +38,9 @@ class HomePage extends React.Component {
     this.handlePlay = this.handlePlay.bind(this);
     this.handleMonsterNoCatch = this.handleMonsterNoCatch.bind(this);
     this.handleNewPlayer = this.handleNewPlayer.bind(this);
+    this.handleSessionExpired = this.handleSessionExpired.bind(this);
+    this.handleUpdatePlayerInfo = this.handleUpdatePlayerInfo.bind(this);
+    this.handlePlayerDisconnect = this.handlePlayerDisconnect.bind(this);
     this.state = {
       errorNameInput: ''
     };
@@ -44,7 +53,12 @@ class HomePage extends React.Component {
     this.socket.on('nameExists', this.handleNameExists);
     this.socket.on('play', this.handlePlay);
     this.socket.on('monsterNoCatch', this.handleMonsterNoCatch);
+    // use the same funcion for 'resetMonsterPosition' event
+    this.socket.on('resetMonsterPosition', this.handleMonsterNoCatch);
     this.socket.on('newPlayerReady', this.handleNewPlayer);
+    this.socket.on('updatePlayerInfo', this.handleUpdatePlayerInfo);
+    this.socket.on('playerDisconnect', this.handlePlayerDisconnect);
+    this.socket.on('removeOldSessions', this.handleSessionExpired);
     this.socket.emit('newGame');
     this.ctx = this._canvas.getContext('2d');
     this.bgImage = new Image();
@@ -84,6 +98,20 @@ class HomePage extends React.Component {
 
   handleNewPlayer({ name, info }) {
     this.props.newPlayer(name, info);
+    if (name === this.props.name) {
+      this.addKeyEvents();
+    }
+  }
+
+  handleSessionExpired(playersDeleted) {
+    if (_.includes(playersDeleted, this.props.name)) {
+      this.setState({
+        errorNameInput: 'Your session has expired'
+      });
+      this.props.updatePlayerName('');
+      this.removeKeyEvents();
+    }
+    this.props.removeOldSessions(playersDeleted);
   }
 
   handlePlay({ players, monster }) {
@@ -93,6 +121,14 @@ class HomePage extends React.Component {
       || window.msRequestAnimationFrame
       || window.mozRequestAnimationFrame;
     this.main();
+  }
+
+  handleUpdatePlayerInfo({ name, info }) {
+    this.props.updatePlayerInfo(name, info);
+  }
+
+  handlePlayerDisconnect(name) {
+    this.props.playerDisconnect(name);
   }
 
   renderGame() {
@@ -128,7 +164,76 @@ class HomePage extends React.Component {
     }
   }
 
+  keyDownEvent = (e) => {
+    e.preventDefault();
+    keysDown[e.keyCode] = true;
+  }
+
+  keyUpEvent = (e) => {
+    e.preventDefault();
+    keysDown = _.omit(keysDown, [e.keyCode]);
+  };
+
+  addKeyEvents = () => {
+    addEventListener('keydown', this.keyDownEvent, false);
+    addEventListener('keyup', this.keyUpEvent, false);
+  }
+
+
+  removeKeyEvents = () => {
+    removeEventListener('keydown', this.keyDownEvent);
+    removeEventListener('keyup', this.keyUpEvent);
+  };
+
   main() {
+    if (keysDown && this.props.players[this.props.name]) {
+      const playerInfo = this.props.players[this.props.name];
+      const distance = playerInfo.speed * modifier;
+      let isPlayerActive = false;
+      let changeMonsterPosition = false;
+      if (38 in keysDown) {
+        if ((playerInfo.y - distance) >= 0) {
+          playerInfo.y -= distance;
+          isPlayerActive = true;
+        }
+      }
+      if (40 in keysDown) {
+        if((playerInfo.y + distance) <= (canvasDimensions.height - 32)){
+          playerInfo.y += distance;
+          isPlayerActive = true;
+        }
+      }
+      if (37 in keysDown) {
+        if ((playerInfo.x - distance) >= 0) {
+          playerInfo.x -= distance;
+          isPlayerActive = true;
+        }
+      }
+      if (39 in keysDown) {
+        if ((playerInfo.x + distance) <= (canvasDimensions.width - 32)) {
+          playerInfo.x += distance;
+          isPlayerActive = true;
+        }
+      }
+      if (playerInfo.x <= (this.props.monster.x + 32)
+        && this.props.monster.x <= (playerInfo.x + 32)
+        && playerInfo.y <= (this.props.monster.y + 32)
+        && this.props.monster.y <= (playerInfo.y + 32)) {
+        playerInfo.capturedMonsters += 1;
+        changeMonsterPosition = true
+      }
+      if (isPlayerActive) {
+        this.props.updatePlayerInfo(this.props.name, playerInfo);
+        this.socket.emit(
+          'updatePosition',
+          {
+            name: this.props.name,
+            info: playerInfo,
+            changeMonsterPosition
+          }
+        );
+      }
+    }
     this.renderGame();
     requestAnimationFrame(this.main);
   };
@@ -152,6 +257,7 @@ class HomePage extends React.Component {
             error={this.state.errorNameInput}
             updatePlayerName={this.props.updatePlayerName}
             handleSubmitForm={this.handleSubmitForm}
+            players={this.props.players}
           />
         </Container>
       </Page>
@@ -172,7 +278,10 @@ const mapDispatchToProps = (dispatch) => {
     updatePlayerName: bindActionCreators(updatePlayerName, dispatch),
     newGame: bindActionCreators(newGame, dispatch),
     monsterNoCatch: bindActionCreators(monsterNoCatch, dispatch),
-    newPlayer: bindActionCreators(newPlayer, dispatch)
+    newPlayer: bindActionCreators(newPlayer, dispatch),
+    removeOldSessions: bindActionCreators(removeOldSessions, dispatch),
+    updatePlayerInfo: bindActionCreators(updatePlayerInfo, dispatch),
+    playerDisconnect: bindActionCreators(playerDisconnect, dispatch)
   }
 };
 
