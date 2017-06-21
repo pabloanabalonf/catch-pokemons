@@ -59,7 +59,11 @@ function handleNewGame (io, socket) {
 function handleNewPlayer(io, socket) {
   socket.on('newPlayer', (name) => {
     // Check if player already exist
-    if (players[name]) {
+    const playerNames = Object.keys(players);
+    const playerExist = _.some(playerNames, (n) => {
+      return RegExp(`^${name}`, 'i').test(n)
+    });
+    if (playerExist) {
       socket.emit(
         'nameExists',
         `Name ${name} already exist`

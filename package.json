@@ -4,7 +4,9 @@
   "description": "Multiplayer game with HTML5, Node.js, React and socket.io",
   "main": "index.js",
   "scripts": {
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "build": "next build",
+    "start": "NODE_ENV=production node server.js"
   },
   "repository": {
     "type": "git",

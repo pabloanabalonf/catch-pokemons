@@ -27,7 +27,7 @@ const CanvasWrapper = styled.div`
 `;
 
 let requestAnimationFrame;
-let keysDown = {};
+const keysDown = {};
 const modifier = 0.017;
 
 class HomePage extends React.Component {
@@ -171,7 +171,7 @@ class HomePage extends React.Component {
 
   keyUpEvent = (e) => {
     e.preventDefault();
-    keysDown = _.omit(keysDown, [e.keyCode]);
+    delete keysDown[e.keyCode];
   };
 
   addKeyEvents = () => {

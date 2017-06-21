@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+import _ from 'lodash';
 import styled from 'styled-components';
 
 const Wrapper = styled.div`
@@ -25,11 +25,22 @@ class Aside extends React.Component {
 
   handleSubmit(event) {
     event.preventDefault();
-    this.props.handleSubmitForm(this.state.name);
+    const name = this.state.name.trim();
+    if (name.length > 0) {
+      this.props.handleSubmitForm(name);
+      this.setState({ name });
+    }
   }
 
   render() {
-    const players = this.props.players;
+    const players = Object
+      .keys(this.props.players)
+      .map((name) => {
+        return {
+          name,
+          ...this.props.players[name]
+        };
+    });
     return (
       <Wrapper>
         {
@@ -52,9 +63,13 @@ class Aside extends React.Component {
         }
         <ul>
           {
-            Object.keys(players).map((player) => (
-              <li key={player}>
-                {player}: { players[player].capturedMonsters }
+            _.orderBy(
+              players,
+              ['capturedMonsters', 'name'],
+              ['desc', 'asc']
+            ).map((player) => (
+              <li key={player.name}>
+                {player.name}: { player.capturedMonsters }
               </li>
             ))
           }
