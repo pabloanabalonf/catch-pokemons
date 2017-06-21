@@ -1,12 +1,15 @@
 import _ from 'lodash';
 import styled from 'styled-components';
+import FormContainer from './FormContainer';
+import FormButton from './FormButton';
+import InputForm from './InputForm';
+import ErrorBox from './ErrorBox';
+import ListContainer from './ListContainer';
+import List from './List';
+import Item from './Item';
 
 const Wrapper = styled.div`
-  width: 200px;
-`;
-
-const Error = styled.div`
-  color: #ff0707;
+  width: 100%;
 `;
 
 class Aside extends React.Component {
@@ -44,36 +47,43 @@ class Aside extends React.Component {
     return (
       <Wrapper>
         {
-          this.props.name.length === 0 && <div>
+          this.props.name.length === 0 && <FormContainer>
             <form onSubmit={this.handleSubmit}>
-              <input
-                onChange={this.handleChange}
+              <InputForm
                 type='text'
                 placeholder='Enter your nick'
+                onChange={this.handleChange}
                 value={this.state.name}
               />
-              <button>Send</button>
+              <FormButton>play</FormButton>
             </form>
             {
-              this.props.error.length > 0 && <Error>
+              this.props.error.length > 0 && <ErrorBox>
                 { this.props.error }
-              </Error>
+              </ErrorBox>
             }
-          </div>
+          </FormContainer>
         }
-        <ul>
-          {
-            _.orderBy(
-              players,
-              ['capturedMonsters', 'name'],
-              ['desc', 'asc']
-            ).map((player) => (
-              <li key={player.name}>
-                {player.name}: { player.capturedMonsters }
-              </li>
-            ))
-          }
-        </ul>
+        <ListContainer>
+          <List>
+            {
+              _.orderBy(
+                players,
+                ['capturedMonsters', 'name'],
+                ['desc', 'asc']
+              ).map((player) => (
+                <Item key={player.name}>
+                  <span>
+                    {player.name}
+                  </span>
+                  <span>
+                    { player.capturedMonsters }
+                  </span>
+                </Item>
+              ))
+            }
+          </List>
+        </ListContainer>
       </Wrapper>
     );
   }

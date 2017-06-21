@@ -22,8 +22,7 @@ import canvasDimensions from '../canvas';
 
 const CanvasWrapper = styled.div`
   display: flex;
-  flex: 1;
-  justify-content: center;
+  justify-content: flex-start;
 `;
 
 let requestAnimationFrame;
@@ -241,16 +240,17 @@ class HomePage extends React.Component {
   render () {
     return (
       <Page>
-        <Title>
-          Game
-        </Title>
+        <Title />
         <Container>
           <CanvasWrapper>
             <canvas
               width={canvasDimensions.width}
               height={canvasDimensions.height}
               ref={(input) => { this._canvas = input; }}
-              style={{border: '1px solid #F0DB4F'}} />
+              style={{
+                border: 0,
+                boxShadow: '3px 2px 10px 0 rgba(0, 0, 0, 0.1)'
+              }} />
           </CanvasWrapper>
           <Aside
             name={this.props.name}
