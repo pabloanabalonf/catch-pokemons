@@ -11,6 +11,7 @@ export default class MyDocument extends Document {
       <html>
         <Head>
         <link href="https://fonts.googleapis.com/css?family=Fjalla+One" rel="stylesheet" />
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet" />
         <style>
           {`
             html {
@@ -23,7 +24,7 @@ export default class MyDocument extends Document {
               font-family: 'Fjalla One', sans-serif;
               margin: 0;
               overflow-y: auto;
-              background: linear-gradient(to bottom, #656f6f 0%, #405166 100%);
+              background: linear-gradient(to bottom, #fff 0%, #3B5BA7 100%);
             }
           `}
         </style>

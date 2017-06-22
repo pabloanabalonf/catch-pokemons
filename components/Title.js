@@ -20,32 +20,21 @@ const Text = styled.span`
   float: left;
   left: 50%;
   transform: skew(-10deg);
-  display: block;
-  text-shadow: #533d4a 1px 1px,
-    #533d4a 2px 2px,
-    #533d4a 3px 3px,
-    #533d4a 4px 4px,
-    #533d4a 5px 5px,
-    #533d4a 6px 6px;
+  text-shadow: #3B5BA7 1px 1px,
+    #3B5BA7 2px 2px,
+    #3B5BA7 3px 3px,
+    #3B5BA7 4px 4px,
+    #3B5BA7 5px 5px,
+    #3B5BA7 6px 6px;
   min-width: 10px;
   min-height: 10px;
-  &:nth-child(1) {
-    color: #f1c83c;
-  }
-  &:nth-child(2) {
-    color: #79dea4;
-  }
-  &:nth-child(3) {
-    color: #e55643;
-  }
+  color: #f1c83c;
 `;
 
 export default () => (
   <Container>
     <Title>
-      <Text>Catch</Text>
-      <Text>the</Text>
-      <Text>monster</Text>
+      <Text>Catch Pokemons</Text>
     </Title>
   </Container>
 );

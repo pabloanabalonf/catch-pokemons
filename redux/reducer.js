@@ -4,7 +4,13 @@ import * as types from './types';
 export const initialState = {
   name: '',
   players: {},
-  monster: {}
+  monster: {},
+  images: {
+    masterImageLoaded: false,
+    monsterImageLoaded: false,
+    mapImageLoaded: false
+  },
+  keysDown: {}
 };
 
 export const reducer = (state = initialState, action) => {
@@ -43,6 +49,35 @@ export const reducer = (state = initialState, action) => {
       return {
         ...state,
         players: _.omit(state.players, action.name)
+      };
+    case types.IMAGE_LOADED:
+      return {
+        ...state,
+        images: {
+          ...state.images,
+          [action.imageName]: true
+        }
+      }
+    case types.KEY_DOWN_EVENT:
+      return {
+        ...state,
+        keysDown: {
+          ...state.keysDown,
+          [action.keyCode]: true
+        }
+      };
+    case types.KEY_UP_EVENT:
+      return {
+        ...state,
+        keysDown: {
+          ...state.keysDown,
+          [action.keyCode]: false
+        }
+      };
+    case types.CLEAR_KEYS_DOWN:
+      return {
+        ...state,
+        keysDown: {}
       };
     default:
       return state;

@@ -16,8 +16,13 @@ import {
   newPlayer,
   removeOldSessions,
   updatePlayerInfo,
-  playerDisconnect
+  playerDisconnect,
+  imageLoaded,
+  keyDownEvent as keyDownEventAction,
+  keyUpEvent as keyUpEventAction,
+  clearKeysDown
 } from '../redux/actionsDispatcher';
+import getImages from '../components/images';
 import canvasDimensions from '../canvas';
 
 const CanvasWrapper = styled.div`
@@ -26,7 +31,6 @@ const CanvasWrapper = styled.div`
 `;
 
 let requestAnimationFrame;
-const keysDown = {};
 const modifier = 0.017;
 
 class HomePage extends React.Component {
@@ -60,25 +64,7 @@ class HomePage extends React.Component {
     this.socket.on('removeOldSessions', this.handleSessionExpired);
     this.socket.emit('newGame');
     this.ctx = this._canvas.getContext('2d');
-    this.bgImage = new Image();
-    this.bgReady = false;
-    this.bgImage.onload = () => {
-      this.bgReady = true;
-    };
-    this.bgImage.src = '/public/background.png';
-
-    this.heroImage = new Image();
-    this.heroReady = false;
-    this.heroImage.onload = () => {
-      this.heroReady = true;
-    };
-    this.heroImage.src = '/public/hero.png';
-    this.monsterImage = new Image();
-    this.monsterReady = false;
-    this.monsterImage.onload = () => {
-      this.monsterReady = true;
-    };
-    this.monsterImage.src = '/public/monster.png';
+    this.images = getImages(this.props.imageLoaded);
   }
 
   handleSubmitForm(name) {
@@ -108,6 +94,7 @@ class HomePage extends React.Component {
         errorNameInput: 'Your session has expired'
       });
       this.props.updatePlayerName('');
+      this.props.clearKeysDown();
       this.removeKeyEvents();
     }
     this.props.removeOldSessions(playersDeleted);
@@ -133,21 +120,27 @@ class HomePage extends React.Component {
   renderGame() {
     const players = this.props.players;
     const monster = this.props.monster;
-    if (this.bgReady) {
-      this.ctx.drawImage(this.bgImage, 0, 0);
-    }
-    if (this.monsterReady) {
+    if (this.props.images.mapImageLoaded) {
       this.ctx.drawImage(
-        this.monsterImage,
+        this.images.map,
+        0,
+        0,
+        512,
+        (480 * this.images.map.height) / this.images.map.width
+      );
+    }
+    if (this.props.images.monsterImageLoaded) {
+      this.ctx.drawImage(
+        this.images.monster,
         monster.x,
         monster.y
       );
     }
 
-    if (this.heroReady) {
+    if (this.props.images.masterImageLoaded) {
       Object.keys(players).forEach((player) => {
         this.ctx.drawImage(
-          this.heroImage,
+          this.images.master,
           players[player].x,
           players[player].y
         );
@@ -165,12 +158,17 @@ class HomePage extends React.Component {
 
   keyDownEvent = (e) => {
     e.preventDefault();
-    keysDown[e.keyCode] = true;
+    if (_.includes([38, 40, 37, 39], e.keyCode)) {
+      this.props.keyDownEventAction(e.keyCode);
+    }
   }
 
   keyUpEvent = (e) => {
     e.preventDefault();
-    delete keysDown[e.keyCode];
+    if (_.includes([38, 40, 37, 39], e.keyCode)) {
+      this.props.keyUpEventAction(e.keyCode);
+    }
+
   };
 
   addKeyEvents = () => {
@@ -185,30 +183,30 @@ class HomePage extends React.Component {
   };
 
   main() {
-    if (keysDown && this.props.players[this.props.name]) {
+    if (this.props.keysDown && this.props.players[this.props.name]) {
       const playerInfo = this.props.players[this.props.name];
       const distance = playerInfo.speed * modifier;
       let isPlayerActive = false;
       let changeMonsterPosition = false;
-      if (38 in keysDown) {
+      if (this.props.keysDown[38]) {
         if ((playerInfo.y - distance) >= 0) {
           playerInfo.y -= distance;
           isPlayerActive = true;
         }
       }
-      if (40 in keysDown) {
+      if (this.props.keysDown[40]) {
         if((playerInfo.y + distance) <= (canvasDimensions.height - 32)){
           playerInfo.y += distance;
           isPlayerActive = true;
         }
       }
-      if (37 in keysDown) {
+      if (this.props.keysDown[37]) {
         if ((playerInfo.x - distance) >= 0) {
           playerInfo.x -= distance;
           isPlayerActive = true;
         }
       }
-      if (39 in keysDown) {
+      if (this.props.keysDown[39]) {
         if ((playerInfo.x + distance) <= (canvasDimensions.width - 32)) {
           playerInfo.x += distance;
           isPlayerActive = true;
@@ -249,7 +247,8 @@ class HomePage extends React.Component {
               ref={(input) => { this._canvas = input; }}
               style={{
                 border: 0,
-                boxShadow: '3px 2px 10px 0 rgba(0, 0, 0, 0.1)'
+                boxShadow: '3px 2px 10px 0 rgba(0, 0, 0, 0.1)',
+                borderRadius: '4px'
               }} />
           </CanvasWrapper>
           <Aside
@@ -269,7 +268,9 @@ const mapStateToProps = (state) => {
   return {
     name: state.name,
     players: state.players,
-    monster: state.monster
+    monster: state.monster,
+    images: state.images,
+    keysDown: state.keysDown
   };
 };
 
@@ -281,8 +282,12 @@ const mapDispatchToProps = (dispatch) => {
     newPlayer: bindActionCreators(newPlayer, dispatch),
     removeOldSessions: bindActionCreators(removeOldSessions, dispatch),
     updatePlayerInfo: bindActionCreators(updatePlayerInfo, dispatch),
-    playerDisconnect: bindActionCreators(playerDisconnect, dispatch)
-  }
+    playerDisconnect: bindActionCreators(playerDisconnect, dispatch),
+    imageLoaded: bindActionCreators(imageLoaded, dispatch),
+    keyDownEventAction: bindActionCreators(keyDownEventAction, dispatch),
+    keyUpEventAction: bindActionCreators(keyUpEventAction, dispatch),
+    clearKeysDown: bindActionCreators(clearKeysDown, dispatch)
+  };
 };
 
 export default withRedux(initStore, mapStateToProps, mapDispatchToProps)(HomePage);

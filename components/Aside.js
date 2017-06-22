@@ -7,6 +7,7 @@ import ErrorBox from './ErrorBox';
 import ListContainer from './ListContainer';
 import List from './List';
 import Item from './Item';
+import ArrowKeys from './ArrowKeys';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -47,22 +48,25 @@ class Aside extends React.Component {
     return (
       <Wrapper>
         {
-          this.props.name.length === 0 && <FormContainer>
-            <form onSubmit={this.handleSubmit}>
-              <InputForm
-                type='text'
-                placeholder='Enter your nick'
-                onChange={this.handleChange}
-                value={this.state.name}
-              />
-              <FormButton>play</FormButton>
-            </form>
-            {
-              this.props.error.length > 0 && <ErrorBox>
-                { this.props.error }
-              </ErrorBox>
-            }
-          </FormContainer>
+          this.props.name.length === 0 ?
+            <FormContainer>
+              <form onSubmit={this.handleSubmit}>
+                <InputForm
+                  type='text'
+                  placeholder='Enter your nick'
+                  onChange={this.handleChange}
+                  value={this.state.name}
+                />
+                <FormButton>play</FormButton>
+              </form>
+              {
+                this.props.error.length > 0 && <ErrorBox>
+                  { this.props.error }
+                </ErrorBox>
+              }
+            </FormContainer>
+          :
+            <ArrowKeys />
         }
         <ListContainer>
           <List>

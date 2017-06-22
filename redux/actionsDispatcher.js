@@ -51,3 +51,30 @@ export const playerDisconnect = (name) => dispatch => {
     name
   });
 }
+
+export const imageLoaded = (imageName) => dispatch => {
+  return dispatch({
+    type: types.IMAGE_LOADED,
+    imageName
+  });
+}
+
+export const keyDownEvent = (keyCode) => dispatch => {
+  return dispatch({
+    type: types.KEY_DOWN_EVENT,
+    keyCode
+  });
+}
+
+export const keyUpEvent = (keyCode) => dispatch => {
+  return dispatch({
+    type: types.KEY_UP_EVENT,
+    keyCode
+  });
+}
+
+export const clearKeysDown = () => dispatch => {
+  return dispatch({
+    type: types.CLEAR_KEYS_DOWN
+  });
+}
