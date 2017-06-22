@@ -14,7 +14,7 @@ io.on('connection', socket => {
   gameIO.connection(io, socket);
 });
 
-gameIO.handleMonsterNoCatch(io);
+gameIO.handlePokemonNoCatch(io);
 gameIO.handleOldSessions(io);
 
 app.use('/public', express.static(`${__dirname}/public`));

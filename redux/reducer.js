@@ -4,10 +4,10 @@ import * as types from './types';
 export const initialState = {
   name: '',
   players: {},
-  monster: {},
+  pokemon: {},
   images: {
     masterImageLoaded: false,
-    monsterImageLoaded: false,
+    pokemonsImagesLoaded: false,
     mapImageLoaded: false
   },
   keysDown: {}
@@ -19,17 +19,17 @@ export const reducer = (state = initialState, action) => {
       return {
         ...state,
         players: action.players,
-        monster: action.monster
+        pokemon: action.pokemon
       }
     case types.UPDATE_PLAYER_NAME:
       return {
         ...state,
         name: action.name
       };
-    case types.MONSTER_NO_CATCH:
+    case types.POKEMON_NO_CATCH:
       return {
         ...state,
-        monster: action.monster
+        pokemon: action.pokemon
       };
     case types.REMOVE_OLD_SESSIONS:
       return {
@@ -43,6 +43,17 @@ export const reducer = (state = initialState, action) => {
         players: {
           ...state.players,
           [action.name]: action.info
+        }
+      };
+    case types.ADD_POKEMON_CAPTURED:
+      return {
+        ...state,
+        players: {
+          ...state.players,
+          [action.name]: {
+            ...state.players[action.name],
+            pokemonsCaptured: action.pokemonsCaptured
+          }
         }
       };
     case types.PLAYER_DISCONNECT:

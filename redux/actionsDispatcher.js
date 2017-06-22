@@ -7,18 +7,18 @@ export const updatePlayerName = (name) => dispatch => {
   });
 }
 
-export const newGame = (players, monster) => dispatch => {
+export const newGame = (players, pokemon) => dispatch => {
   return dispatch({
     type: types.NEW_GAME,
     players,
-    monster
+    pokemon
   });
 }
 
-export const monsterNoCatch = (monster) => dispatch => {
+export const pokemonNoCatch = (pokemon) => dispatch => {
   return dispatch({
-    type: types.MONSTER_NO_CATCH,
-    monster
+    type: types.POKEMON_NO_CATCH,
+    pokemon
   });
 }
 
@@ -42,6 +42,14 @@ export const updatePlayerInfo = (name, info) => dispatch => {
     type: types.UPDATE_PLAYER_INFO,
     name,
     info
+  });
+}
+
+export const addPokemonCaptured = (name, pokemonsCaptured) => dispatch => {
+  return dispatch({
+    type: types.ADD_POKEMON_CAPTURED,
+    name,
+    pokemonsCaptured
   });
 }
 

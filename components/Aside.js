@@ -73,7 +73,7 @@ class Aside extends React.Component {
             {
               _.orderBy(
                 players,
-                ['capturedMonsters', 'name'],
+                ['pokemonsCaptured', 'name'],
                 ['desc', 'asc']
               ).map((player) => (
                 <Item key={player.name}>
@@ -81,7 +81,7 @@ class Aside extends React.Component {
                     {player.name}
                   </span>
                   <span>
-                    { player.capturedMonsters }
+                    { player.pokemonsCaptured }
                   </span>
                 </Item>
               ))

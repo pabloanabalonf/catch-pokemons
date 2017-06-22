@@ -1,22 +1,30 @@
 const _ = require('lodash');
 const canvas = require('./canvas');
+const pokemons = require('./pokemons');
 let players = {};
-const monster = {};
+const pokemon = {};
 
 const getRandomPosition = (dimension) => {
   return 32 + (Math.random() * (dimension - 64));
 };
 
-function handleMonsterNoCatch(io) {
-  // If no one catches the monster in 10 seconds
+const getRandomPokemon = () => {
+  return pokemons[
+    Math.floor(Math.random() * pokemons.length)
+  ];
+};
+
+function handlePokemonNoCatch(io) {
+  // If no one catches the pokemon in 10 seconds
   // its position is restarted
   setInterval(() => {
-    const timeMonsterNoCaught = Date.now() - monster.updated;
-    if(timeMonsterNoCaught > 10000){
-      monster.x = getRandomPosition(canvas.width);
-      monster.y = getRandomPosition(canvas.height);
-      monster.updated = Date.now();
-      io.emit('monsterNoCatch', monster);
+    const timePokemonNoCaught = Date.now() - pokemon.updated;
+    if(timePokemonNoCaught > 10000){
+      pokemon.x = getRandomPosition(canvas.width);
+      pokemon.y = getRandomPosition(canvas.height);
+      pokemon.updated = Date.now();
+      pokemon.name = getRandomPokemon();
+      io.emit('pokemonNoCatch', pokemon);
     }
   }, 10000);
 }
@@ -40,17 +48,18 @@ function handleOldSessions(io) {
 
 function handleNewGame (io, socket) {
   socket.on('newGame', () => {
-    //if the monster is not created yet...
-    if (!monster.x && !monster.y) {
-      monster.x = getRandomPosition(canvas.width);
-      monster.y = getRandomPosition(canvas.height);
-      monster.updated = Date.now();
+    //if the pokemon is not created yet...
+    if (!pokemon.x && !pokemon.y) {
+      pokemon.x = getRandomPosition(canvas.width);
+      pokemon.y = getRandomPosition(canvas.height);
+      pokemon.updated = Date.now();
+      pokemon.name = getRandomPokemon();
     }
     socket.emit(
       'play',
       {
         players,
-        monster
+        pokemon
       }
     );
   });
@@ -73,7 +82,7 @@ function handleNewPlayer(io, socket) {
         x: getRandomPosition(canvas.width),
         y: getRandomPosition(canvas.height),
         speed: 256,
-        capturedMonsters: 0,
+        pokemonsCaptured: 0,
         updated: Date.now()
       };
       socket.namePlayer = name;
@@ -90,11 +99,22 @@ function handleNewPlayer(io, socket) {
 
 function handleUpdatePlayerInfo(io, socket) {
   socket.on('updatePosition', (data) => {
-    const { name, info, changeMonsterPosition } = data;
+    const { name, info, changePokemonPosition } = data;
     players[name].updated = Date.now();
     players[name].x = info.x;
     players[name].y = info.y;
-    players[name].capturedMonsters = info.capturedMonsters;
+    if (changePokemonPosition) {
+      players[name].pokemonsCaptured += 1;
+      pokemon.x = getRandomPosition(canvas.width);
+      pokemon.y = getRandomPosition(canvas.height);
+      pokemon.updated = Date.now();
+      pokemon.name = getRandomPokemon();
+      io.emit('resetPokemonPosition', {
+        pokemon,
+        playerName: name,
+        pokemonsCaptured: players[name].pokemonsCaptured
+      });
+    }
     //emit event for all users less for to the user who fire this event
     socket.broadcast.emit(
       'updatePlayerInfo',
@@ -103,13 +123,6 @@ function handleUpdatePlayerInfo(io, socket) {
         info: players[name]
       }
     );
-
-    if (changeMonsterPosition) {
-      monster.x = getRandomPosition(canvas.width);
-      monster.y = getRandomPosition(canvas.height);
-      monster.updated = Date.now();
-      io.emit('resetMonsterPosition', monster);
-    }
   });
 }
 
@@ -128,7 +141,7 @@ function handleDisconnect(io, socket) {
 }
 
 module.exports = {
-  handleMonsterNoCatch,
+  handlePokemonNoCatch,
   handleOldSessions,
   connection: (io, socket) => {
     handleNewGame(io, socket);

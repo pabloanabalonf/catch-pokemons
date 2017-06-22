@@ -24,7 +24,7 @@ export default class MyDocument extends Document {
               font-family: 'Fjalla One', sans-serif;
               margin: 0;
               overflow-y: auto;
-              background: linear-gradient(to bottom, #fff 0%, #3B5BA7 100%);
+              background: #e5e6e8;
             }
           `}
         </style>

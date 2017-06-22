@@ -12,10 +12,11 @@ import Aside from '../components/Aside';
 import {
   updatePlayerName,
   newGame,
-  monsterNoCatch,
+  pokemonNoCatch,
   newPlayer,
   removeOldSessions,
   updatePlayerInfo,
+  addPokemonCaptured,
   playerDisconnect,
   imageLoaded,
   keyDownEvent as keyDownEventAction,
@@ -28,6 +29,23 @@ import canvasDimensions from '../canvas';
 const CanvasWrapper = styled.div`
   display: flex;
   justify-content: flex-start;
+  flex-direction: column;
+`;
+
+const PokemonNameTitle = styled.h2`
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  letter-spacing: 5px;
+  font-family: 'Fjalla One', sans-serif;
+  text-shadow: #3B5BA7 1px 1px,
+    #3B5BA7 2px 2px,
+    #3B5BA7 3px 3px,
+    #3B5BA7 3px 3px,
+    #3B5BA7 3px 4px,
+    #3B5BA7 3px 4px;
+  text-transform: uppercase;
+  color: #f1c83c;
+  align-self: center;
 `;
 
 let requestAnimationFrame;
@@ -39,7 +57,8 @@ class HomePage extends React.Component {
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
     this.handleNameExists = this.handleNameExists.bind(this);
     this.handlePlay = this.handlePlay.bind(this);
-    this.handleMonsterNoCatch = this.handleMonsterNoCatch.bind(this);
+    this.handlePokemonNoCatch = this.handlePokemonNoCatch.bind(this);
+    this.handleResetPokemonPosition = this.handleResetPokemonPosition.bind(this);
     this.handleNewPlayer = this.handleNewPlayer.bind(this);
     this.handleSessionExpired = this.handleSessionExpired.bind(this);
     this.handleUpdatePlayerInfo = this.handleUpdatePlayerInfo.bind(this);
@@ -55,9 +74,9 @@ class HomePage extends React.Component {
     this.socket = io();
     this.socket.on('nameExists', this.handleNameExists);
     this.socket.on('play', this.handlePlay);
-    this.socket.on('monsterNoCatch', this.handleMonsterNoCatch);
-    // use the same funcion for 'resetMonsterPosition' event
-    this.socket.on('resetMonsterPosition', this.handleMonsterNoCatch);
+    this.socket.on('pokemonNoCatch', this.handlePokemonNoCatch);
+    // use the same funcion for 'resetPokemonPosition' event
+    this.socket.on('resetPokemonPosition', this.handleResetPokemonPosition);
     this.socket.on('newPlayerReady', this.handleNewPlayer);
     this.socket.on('updatePlayerInfo', this.handleUpdatePlayerInfo);
     this.socket.on('playerDisconnect', this.handlePlayerDisconnect);
@@ -77,8 +96,13 @@ class HomePage extends React.Component {
     this.props.updatePlayerName('');
   }
 
-  handleMonsterNoCatch(monster) {
-    this.props.monsterNoCatch(monster);
+  handlePokemonNoCatch(pokemon) {
+    this.props.pokemonNoCatch(pokemon);
+  }
+
+  handleResetPokemonPosition({ pokemon, playerName, pokemonsCaptured }) {
+    this.props.pokemonNoCatch(pokemon);
+    this.props.addPokemonCaptured(playerName, pokemonsCaptured);
   }
 
   handleNewPlayer({ name, info }) {
@@ -100,8 +124,8 @@ class HomePage extends React.Component {
     this.props.removeOldSessions(playersDeleted);
   }
 
-  handlePlay({ players, monster }) {
-    this.props.newGame(players, monster);
+  handlePlay({ players, pokemon }) {
+    this.props.newGame(players, pokemon);
     requestAnimationFrame = window.requestAnimationFrame
       || window.webkitRequestAnimationFrame
       || window.msRequestAnimationFrame
@@ -119,7 +143,7 @@ class HomePage extends React.Component {
 
   renderGame() {
     const players = this.props.players;
-    const monster = this.props.monster;
+    const pokemon = this.props.pokemon;
     if (this.props.images.mapImageLoaded) {
       this.ctx.drawImage(
         this.images.map,
@@ -129,11 +153,11 @@ class HomePage extends React.Component {
         (480 * this.images.map.height) / this.images.map.width
       );
     }
-    if (this.props.images.monsterImageLoaded) {
+    if (this.props.images.pokemonsImagesLoaded) {
       this.ctx.drawImage(
-        this.images.monster,
-        monster.x,
-        monster.y
+        this.images.pokemons[pokemon.name],
+        pokemon.x,
+        pokemon.y
       );
     }
 
@@ -187,7 +211,7 @@ class HomePage extends React.Component {
       const playerInfo = this.props.players[this.props.name];
       const distance = playerInfo.speed * modifier;
       let isPlayerActive = false;
-      let changeMonsterPosition = false;
+      let changePokemonPosition = false;
       if (this.props.keysDown[38]) {
         if ((playerInfo.y - distance) >= 0) {
           playerInfo.y -= distance;
@@ -212,12 +236,11 @@ class HomePage extends React.Component {
           isPlayerActive = true;
         }
       }
-      if (playerInfo.x <= (this.props.monster.x + 32)
-        && this.props.monster.x <= (playerInfo.x + 32)
-        && playerInfo.y <= (this.props.monster.y + 32)
-        && this.props.monster.y <= (playerInfo.y + 32)) {
-        playerInfo.capturedMonsters += 1;
-        changeMonsterPosition = true
+      if (playerInfo.x <= (this.props.pokemon.x + 32)
+        && this.props.pokemon.x <= (playerInfo.x + 32)
+        && playerInfo.y <= (this.props.pokemon.y + 32)
+        && this.props.pokemon.y <= (playerInfo.y + 32)) {
+        changePokemonPosition = true
       }
       if (isPlayerActive) {
         this.props.updatePlayerInfo(this.props.name, playerInfo);
@@ -226,7 +249,7 @@ class HomePage extends React.Component {
           {
             name: this.props.name,
             info: playerInfo,
-            changeMonsterPosition
+            changePokemonPosition
           }
         );
       }
@@ -241,6 +264,9 @@ class HomePage extends React.Component {
         <Title />
         <Container>
           <CanvasWrapper>
+            <PokemonNameTitle>
+              Catch {this.props.pokemon.name}
+            </PokemonNameTitle>
             <canvas
               width={canvasDimensions.width}
               height={canvasDimensions.height}
@@ -268,7 +294,7 @@ const mapStateToProps = (state) => {
   return {
     name: state.name,
     players: state.players,
-    monster: state.monster,
+    pokemon: state.pokemon,
     images: state.images,
     keysDown: state.keysDown
   };
@@ -278,10 +304,11 @@ const mapDispatchToProps = (dispatch) => {
   return {
     updatePlayerName: bindActionCreators(updatePlayerName, dispatch),
     newGame: bindActionCreators(newGame, dispatch),
-    monsterNoCatch: bindActionCreators(monsterNoCatch, dispatch),
+    pokemonNoCatch: bindActionCreators(pokemonNoCatch, dispatch),
     newPlayer: bindActionCreators(newPlayer, dispatch),
     removeOldSessions: bindActionCreators(removeOldSessions, dispatch),
     updatePlayerInfo: bindActionCreators(updatePlayerInfo, dispatch),
+    addPokemonCaptured: bindActionCreators(addPokemonCaptured, dispatch),
     playerDisconnect: bindActionCreators(playerDisconnect, dispatch),
     imageLoaded: bindActionCreators(imageLoaded, dispatch),
     keyDownEventAction: bindActionCreators(keyDownEventAction, dispatch),
