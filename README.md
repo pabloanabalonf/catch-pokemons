@@ -1,11 +1,7 @@
-**
-
-Catch the Monster Game!
+Catch Pokemons!
 =======================
 
-HTML5 multiplayer canvas game (Node.js, Socket.io, AngularJS). Clone and execute:
+Multiplayer pokemon game made with HTML5 (canvas) and JavaScript (Node.js, Socket.io, Next.js, React, Redux, styled-components)
 
     npm install
-    bower install
-
-Instruccions [here](http://www.pabloanabalon.com/blog/build-multiplayer-game-html5-javascript)
+    npm run dev
